@@ -5,6 +5,8 @@ import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import NewProject from './pages/NewProject'
 import Results from './pages/Results'
+import LandscapeNew from './pages/LandscapeNew'
+import LandscapeResults from './pages/LandscapeResults'
 
 export default function App() {
   return (
@@ -24,6 +26,16 @@ export default function App() {
         <Route path="/results/:id" element={
           <ProtectedRoute>
             <Results />
+          </ProtectedRoute>
+        } />
+        <Route path="/landscape/new" element={
+          <ProtectedRoute>
+            <LandscapeNew />
+          </ProtectedRoute>
+        } />
+        <Route path="/landscape/results/:id" element={
+          <ProtectedRoute>
+            <LandscapeResults />
           </ProtectedRoute>
         } />
       </Routes>

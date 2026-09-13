@@ -44,3 +44,16 @@ export const uploadImages = (projectId, files, imageType) => {
 export const analyzeProject = (projectId) => api.post(`/analyze/${projectId}`)
 
 export default api
+export const createLandscapeProject = (data) => api.post('/landscape/projects', data)
+export const getLandscapeProjects = () => api.get('/landscape/projects')
+export const getLandscapeProject = (id) => api.get(`/landscape/projects/${id}`)
+export const deleteLandscapeProject = (id) => api.delete(`/landscape/projects/${id}`)
+export const uploadLandscapeImages = (projectId, files, imageType) => {
+  const formData = new FormData()
+  files.forEach((file) => formData.append('files', file))
+  return api.post(`/landscape/upload/${projectId}?image_type=${imageType}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+export const analyzeLandscapeProject = (projectId) => api.post(`/landscape/analyze/${projectId}`)
+export const getLandscapeSuggestion = (id) => api.get(`/landscape/projects/${id}/suggestion`)
