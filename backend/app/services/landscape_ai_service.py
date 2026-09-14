@@ -1,4 +1,4 @@
-import anthropic
+import httpx
 import base64
 import json
 import os
@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+MODEL = "google/gemini-2.5-flash-lite"
 
 def image_to_base64(image_path: str) -> tuple[str, str]:
     with open(image_path, "rb") as f:
@@ -33,8 +34,10 @@ async def analyze_landscape(project, plot_image_paths: list, ref_image_paths: li
             if os.path.exists(full_path):
                 b64, media_type = image_to_base64(full_path)
                 content.append({
-                    "type": "image",
-                    "source": {"type": "base64", "media_type": media_type, "data": b64}
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{media_type};base64,{b64}"
+                    }
                 })
 
     if ref_image_paths:
@@ -44,8 +47,10 @@ async def analyze_landscape(project, plot_image_paths: list, ref_image_paths: li
             if os.path.exists(full_path):
                 b64, media_type = image_to_base64(full_path)
                 content.append({
-                    "type": "image",
-                    "source": {"type": "base64", "media_type": media_type, "data": b64}
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{media_type};base64,{b64}"
+                    }
                 })
 
     content.append({
@@ -63,8 +68,7 @@ Additional notes: {project.notes or 'none'}
 {"Reference images have been provided — use them to understand the user's aesthetic taste." if ref_image_paths else ""}
 
 You are an expert landscape architect specializing in Kenyan gardens and outdoor spaces.
-Consider: local climate, drought-tolerant plants, water conservation, soil types in Kenya,
-indigenous plants, and affordable local materials.
+Consider local climate, drought-tolerant plants, water conservation, indigenous plants, and affordable local materials.
 
 Respond ONLY in this exact JSON format with no preamble or markdown:
 {{
@@ -82,14 +86,34 @@ Respond ONLY in this exact JSON format with no preamble or markdown:
 }}"""
     })
 
-    response = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2000,
-        system="You are an expert landscape architect specializing in Kenyan gardens, indigenous plants, and affordable outdoor transformations. Respond only in the JSON format requested.",
-        messages=[{"role": "user", "content": content}]
-    )
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://roomvision-app.netlify.app",
+                "X-Title": "RoomVision"
+            },
+            json={
+                "model": MODEL,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are an expert landscape architect specializing in Kenyan gardens, indigenous plants, and affordable outdoor transformations. Respond only in the JSON format requested."
+                    },
+                    {
+                        "role": "user",
+                        "content": content
+                    }
+                ],
+                "max_tokens": 2000
+            },
+            timeout=60.0
+        )
+        result = response.json()
 
-    raw = response.content[0].text
+    raw = result["choices"][0]["message"]["content"]
     cleaned = raw.replace("```json", "").replace("```", "").strip()
 
     try:
