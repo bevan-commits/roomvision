@@ -113,6 +113,8 @@ Respond ONLY in this exact JSON format with no preamble or markdown:
         )
         result = response.json()
 
+        if "choices" not in result:
+        raise Exception(f"OpenRouter error: {result}")
     raw = result["choices"][0]["message"]["content"]
     cleaned = raw.replace("```json", "").replace("```", "").strip()
 
