@@ -24,7 +24,6 @@ def image_to_base64(image_path: str) -> tuple[str, str]:
 
 async def analyze_landscape(project, plot_image_paths: list, ref_image_paths: list) -> dict:
     content = []
-
     upload_dir = os.getenv("UPLOAD_DIR", "./uploads")
 
     if plot_image_paths:
@@ -35,22 +34,18 @@ async def analyze_landscape(project, plot_image_paths: list, ref_image_paths: li
                 b64, media_type = image_to_base64(full_path)
                 content.append({
                     "type": "image_url",
-                    "image_url": {
-                        "url": f"data:{media_type};base64,{b64}"
-                    }
+                    "image_url": {"url": f"data:{media_type};base64,{b64}"}
                 })
 
     if ref_image_paths:
-        content.append({"type": "text", "text": "Here are reference/inspiration images of landscapes the user loves:"})
+        content.append({"type": "text", "text": "Here are reference/inspiration images:"})
         for path in ref_image_paths:
             full_path = os.path.join(upload_dir, os.path.basename(path))
             if os.path.exists(full_path):
                 b64, media_type = image_to_base64(full_path)
                 content.append({
                     "type": "image_url",
-                    "image_url": {
-                        "url": f"data:{media_type};base64,{b64}"
-                    }
+                    "image_url": {"url": f"data:{media_type};base64,{b64}"}
                 })
 
     content.append({
@@ -64,15 +59,9 @@ Goals: {', '.join(project.goals) if project.goals else 'general improvement'}
 Climate zone: {project.climate_zone or 'Kenya (tropical/semi-arid)'}
 Additional notes: {project.notes or 'none'}
 
-{"No plot photo was uploaded — provide general advice based on plot type and style." if not plot_image_paths else ""}
-{"Reference images have been provided — use them to understand the user's aesthetic taste." if ref_image_paths else ""}
-
-You are an expert landscape architect specializing in Kenyan gardens and outdoor spaces.
-Consider local climate, drought-tolerant plants, water conservation, indigenous plants, and affordable local materials.
-
 Respond ONLY in this exact JSON format with no preamble or markdown:
 {{
-  "plot_analysis": "2-3 sentences describing what you observe about the current space",
+  "plot_analysis": "2-3 sentences describing the current space",
   "zone_plan": [
     {{"zone": "zone name", "description": "what this area is for", "location": "where in the plot"}}
   ],
@@ -80,7 +69,7 @@ Respond ONLY in this exact JSON format with no preamble or markdown:
     {{"name": "plant name", "type": "tree/shrub/groundcover/grass", "reason": "why it suits this space", "water_needs": "low/medium/high", "local_availability": "easily found in Kenya"}}
   ],
   "hardscape_suggestions": ["suggestion 1", "suggestion 2", "suggestion 3"],
-  "budget_priorities": ["highest impact action first", "second priority", "third priority"],
+  "budget_priorities": ["highest impact first", "second priority", "third priority"],
   "maintenance_tips": ["tip 1", "tip 2", "tip 3"],
   "overall_vision": "One evocative sentence describing the transformed outdoor space"
 }}"""
@@ -100,7 +89,7 @@ Respond ONLY in this exact JSON format with no preamble or markdown:
                 "messages": [
                     {
                         "role": "system",
-                        "content": "You are an expert landscape architect specializing in Kenyan gardens, indigenous plants, and affordable outdoor transformations. Respond only in the JSON format requested."
+                        "content": "You are an expert landscape architect specializing in Kenyan gardens. Respond only in the JSON format requested."
                     },
                     {
                         "role": "user",
@@ -113,10 +102,9 @@ Respond ONLY in this exact JSON format with no preamble or markdown:
         )
         result = response.json()
 
-                result = response.json()
-
     if "choices" not in result:
         raise Exception(f"OpenRouter error: {result}")
+
     raw = result["choices"][0]["message"]["content"]
     cleaned = raw.replace("```json", "").replace("```", "").strip()
 
