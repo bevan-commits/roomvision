@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-MODEL = "google/gemini-2.5-flash-lite"
+MODEL = "MODEL = "google/gemma-4-26b-a4b-it:free""
 
 def image_to_base64(image_path: str) -> tuple[str, str]:
     with open(image_path, "rb") as f:
