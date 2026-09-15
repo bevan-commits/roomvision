@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-2.5-flash"
 
 def image_to_base64(image_path: str) -> tuple[str, str]:
     with open(image_path, "rb") as f:
