@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-MODEL = "meta-llama/llama-3.1-8b-instruct:free"
+MODEL = "nvidia/llama-nemotron-nano-8b-v1:free"
 
 def image_to_base64(image_path: str) -> tuple[str, str]:
     with open(image_path, "rb") as f:
